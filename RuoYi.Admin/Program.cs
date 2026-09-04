@@ -23,5 +23,7 @@ app.MapRoleEndpoints();
 app.MapMenuEndpoints();
 app.MapDeptEndpoints();
 app.MapDictEndpoints();
+app.MapConfigEndpoints();
+app.MapProfileEndpoints();
 
 app.Run();
