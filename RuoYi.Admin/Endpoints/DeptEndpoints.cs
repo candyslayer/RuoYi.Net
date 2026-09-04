@@ -1,3 +1,4 @@
+using RuoYi.Admin.Authorization;
 using RuoYi.Common.Constants;
 using RuoYi.Common.Enums;
 using RuoYi.System.Services;
@@ -9,12 +10,12 @@ public static class DeptEndpoints
     public static IEndpointRouteBuilder MapDeptEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/system/dept").RequireAuthorization();
-        group.MapGet("/list", ListAsync);
-        group.MapGet("/list/exclude/{deptId:long}", ExcludeChildListAsync);
-        group.MapGet("/{deptId:long}", GetAsync);
-        group.MapPost("", AddAsync);
-        group.MapPut("", EditAsync);
-        group.MapDelete("/{deptId:long}", RemoveAsync);
+        group.MapGet("/list", ListAsync).RequirePermission("system:dept:list");
+        group.MapGet("/list/exclude/{deptId:long}", ExcludeChildListAsync).RequirePermission("system:dept:list");
+        group.MapGet("/{deptId:long}", GetAsync).RequirePermission("system:dept:query");
+        group.MapPost("", AddAsync).RequirePermission("system:dept:add");
+        group.MapPut("", EditAsync).RequirePermission("system:dept:edit");
+        group.MapDelete("/{deptId:long}", RemoveAsync).RequirePermission("system:dept:remove");
         return endpoints;
     }
 
