@@ -1,3 +1,4 @@
+using RuoYi.Admin.Authorization;
 using RuoYi.Common.Constants;
 using RuoYi.Common.Enums;
 using RuoYi.Common.Utils;
@@ -10,13 +11,13 @@ public static class MenuEndpoints
     public static IEndpointRouteBuilder MapMenuEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/system/menu").RequireAuthorization();
-        group.MapGet("/list", ListAsync);
-        group.MapGet("/{menuId:long}", GetAsync);
+        group.MapGet("/list", ListAsync).RequirePermission("system:menu:list");
+        group.MapGet("/{menuId:long}", GetAsync).RequirePermission("system:menu:query");
         group.MapGet("/treeselect", TreeSelectAsync);
         group.MapGet("/roleMenuTreeselect/{roleId:long}", RoleMenuTreeSelectAsync);
-        group.MapPost("", AddAsync);
-        group.MapPut("", EditAsync);
-        group.MapDelete("/{menuId:long}", RemoveAsync);
+        group.MapPost("", AddAsync).RequirePermission("system:menu:add");
+        group.MapPut("", EditAsync).RequirePermission("system:menu:edit");
+        group.MapDelete("/{menuId:long}", RemoveAsync).RequirePermission("system:menu:remove");
         return endpoints;
     }
 
