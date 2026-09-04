@@ -17,5 +17,7 @@ var app = builder.Build();
 // Minimal API endpoints.
 app.MapSystemEndpoints();
 app.MapUserEndpoints();
+app.MapPostEndpoints();
+app.MapNoticeEndpoints();
 
 app.Run();
