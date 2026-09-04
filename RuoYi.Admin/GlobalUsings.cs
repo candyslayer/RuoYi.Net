@@ -1,9 +1,10 @@
-﻿global using Mapster;
+global using Mapster;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.CodeAnalysis;
 global using RuoYi.Framework;
+global using RuoYi.Framework.Authorization;
 global using RuoYi.Framework.DependencyInjection;
 global using RuoYi.Framework.Extensions;
 global using System;
