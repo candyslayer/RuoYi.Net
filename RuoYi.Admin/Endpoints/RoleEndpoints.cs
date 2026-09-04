@@ -42,9 +42,9 @@ public static class RoleEndpoints
     private static async Task<AjaxResult> AddAsync(SysRoleDto role, SysRoleService service)
     {
         if (!await service.CheckRoleNameUniqueAsync(role))
-            return AjaxResult.Error($"新增角色'{role.RoleName}失败，角色名称已存在");
+            return AjaxResult.Error($"新增角色'{role.RoleName}'失败，角色名称已存在");
         if (!await service.CheckRoleKeyUniqueAsync(role))
-            return AjaxResult.Error($"新增角色'{role.RoleName}失败，角色权限已存在");
+            return AjaxResult.Error($"新增角色'{role.RoleName}'失败，角色权限已存在");
         return AjaxResult.Success(await service.InsertRoleAsync(role));
     }
 
