@@ -1,3 +1,4 @@
+using RuoYi.Admin.Authorization;
 using RuoYi.Common.Enums;
 using RuoYi.Common.Utils;
 using RuoYi.Data.Dtos;
@@ -12,23 +13,23 @@ public static class DictEndpoints
     public static IEndpointRouteBuilder MapDictEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var type = endpoints.MapGroup("/system/dict/type").RequireAuthorization();
-        type.MapGet("/list", TypeListAsync);
-        type.MapGet("/{id:long}", TypeGetAsync);
-        type.MapPost("", TypeAddAsync);
-        type.MapPut("", TypeEditAsync);
-        type.MapDelete("/{ids}", TypeRemoveAsync);
+        type.MapGet("/list", TypeListAsync).RequirePermission("system:dict:list");
+        type.MapGet("/{id:long}", TypeGetAsync).RequirePermission("system:dict:query");
+        type.MapPost("", TypeAddAsync).RequirePermission("system:dict:add");
+        type.MapPut("", TypeEditAsync).RequirePermission("system:dict:edit");
+        type.MapDelete("/{ids}", TypeRemoveAsync).RequirePermission("system:dict:remove");
         type.MapDelete("/refreshCache", RefreshCache);
         type.MapGet("/optionselect", TypeOptionSelectAsync);
-        type.MapPost("/export", TypeExportAsync);
+        type.MapPost("/export", TypeExportAsync).RequirePermission("system:dict:export");
 
         var data = endpoints.MapGroup("/system/dict/data").RequireAuthorization();
-        data.MapGet("/list", DataListAsync);
-        data.MapGet("/{dictCode:long}", DataGetAsync);
+        data.MapGet("/list", DataListAsync).RequirePermission("system:dict:list");
+        data.MapGet("/{dictCode:long}", DataGetAsync).RequirePermission("system:dict:query");
         data.MapGet("/type/{dictType}", DataByTypeAsync);
-        data.MapPost("", DataAddAsync);
-        data.MapPut("", DataEditAsync);
-        data.MapDelete("/{dictCodes}", DataRemoveAsync);
-        data.MapPost("/export", DataExportAsync);
+        data.MapPost("", DataAddAsync).RequirePermission("system:dict:add");
+        data.MapPut("", DataEditAsync).RequirePermission("system:dict:edit");
+        data.MapDelete("/{dictCodes}", DataRemoveAsync).RequirePermission("system:dict:remove");
+        data.MapPost("/export", DataExportAsync).RequirePermission("system:dict:export");
         return endpoints;
     }
 
