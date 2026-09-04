@@ -13,7 +13,8 @@ public static class SampleEndpoints
 
         group.MapGet("/{id:long?}", GetAsync);
         group.MapGet("/getWithPerminAndRole/{id:long?}", GetWithPerminAndRoleAsync)
-            .RequireAuthorization();
+            .RequirePermission("system:dept:query")
+            .RequireRole("admin");
         group.MapGet("/rateLimit", RateLimit)
             .RequireRateLimiting(LimitType.Default);
         group.MapGet("/ipRateLimit", IpRateLimit)
