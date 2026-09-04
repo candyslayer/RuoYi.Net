@@ -33,7 +33,7 @@ public static class MonitorEndpoints
         server.MapGet("", GetServerInfo).RequirePermission("monitor:server:list");
 
         var druid = endpoints.MapGroup("/monitor/druid").RequireAuthorization();
-        druid.MapGet("", GetDruidInfo);
+        druid.MapGet("", GetDruidInfo).RequirePermission("monitor:druid:list");
 
         return endpoints;
     }
