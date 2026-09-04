@@ -28,5 +28,6 @@ app.MapProfileEndpoints();
 app.MapMonitorEndpoints();
 app.MapLogEndpoints();
 app.MapCommonEndpoints();
+app.MapSampleEndpoints();
 
 app.Run();
