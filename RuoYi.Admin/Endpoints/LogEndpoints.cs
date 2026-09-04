@@ -13,24 +13,24 @@ public static class LogEndpoints
     public static IEndpointRouteBuilder MapLogEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var login = endpoints.MapGroup("/monitor/logininfor").RequireAuthorization();
-        login.MapGet("/list", GetLoginListAsync);
-        login.MapGet("/{id:long}", GetLoginAsync);
-        login.MapGet("", GetLoginAsync);
-        login.MapPost("", AddLoginAsync);
-        login.MapPut("", EditLoginAsync);
-        login.MapDelete("/{ids}", RemoveLoginAsync);
-        login.MapPost("/import", ImportLoginAsync);
-        login.MapPost("/export", ExportLoginAsync);
+        login.MapGet("/list", GetLoginListAsync).RequirePermission("system:logininfor:list");
+        login.MapGet("/{id:long}", GetLoginAsync).RequirePermission("system:logininfor:query");
+        login.MapGet("", GetLoginAsync).RequirePermission("system:logininfor:query");
+        login.MapPost("", AddLoginAsync).RequirePermission("system:logininfor:add");
+        login.MapPut("", EditLoginAsync).RequirePermission("system:logininfor:edit");
+        login.MapDelete("/{ids}", RemoveLoginAsync).RequirePermission("system:logininfor:remove");
+        login.MapPost("/import", ImportLoginAsync).RequirePermission("system:logininfor:import");
+        login.MapPost("/export", ExportLoginAsync).RequirePermission("system:logininfor:export");
 
         var oper = endpoints.MapGroup("/monitor/operlog").RequireAuthorization();
-        oper.MapGet("/list", GetOperListAsync);
-        oper.MapDelete("/{ids}", RemoveOperAsync);
-        oper.MapDelete("/clean", CleanOper);
-        oper.MapPost("/export", ExportOperAsync);
+        oper.MapGet("/list", GetOperListAsync).RequirePermission("system:operlog:list");
+        oper.MapDelete("/{ids}", RemoveOperAsync).RequirePermission("system:operlog:remove");
+        oper.MapDelete("/clean", CleanOper).RequirePermission("system:operlog:remove");
+        oper.MapPost("/export", ExportOperAsync).RequirePermission("system:operlog:export");
 
         var online = endpoints.MapGroup("/monitor/online").RequireAuthorization();
-        online.MapGet("/list", GetOnlineListAsync);
-        online.MapDelete("/{tokenId}", ForceLogout);
+        online.MapGet("/list", GetOnlineListAsync).RequirePermission("monitor:online:list");
+        online.MapDelete("/{tokenId}", ForceLogout).RequirePermission("monitor:online:forceLogout");
 
         return endpoints;
     }
