@@ -1,5 +1,5 @@
 <p align="center">
-	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-dd77653d7c9f197dd9d93684f3c8dcfbab96.png">
+	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-dd77653d7c9f197dd9d93684f3c8dcfbab6.png">
 </p>
 <h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">RuoYi.Net Minimal API</h1>
 <h4 align="center">基于 .NET 10 Minimal API 改造的若依管理框架</h4>
