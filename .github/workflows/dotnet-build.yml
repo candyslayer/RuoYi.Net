@@ -1,0 +1,29 @@
+name: .NET Build
+
+on:
+  push:
+    branches: [ master, refactor/minimal-api ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore RuoYi.Net.sln
+
+      - name: Build
+        run: dotnet build RuoYi.Net.sln --configuration Release --no-restore
+
+      - name: NativeAOT publish check
+        run: dotnet publish RuoYi.Admin/RuoYi.Admin.csproj --configuration Release --runtime linux-x64 --self-contained true --property:PublishAot=true --property:StripSymbols=true --no-restore

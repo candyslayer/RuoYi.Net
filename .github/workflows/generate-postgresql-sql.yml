@@ -1,0 +1,75 @@
+name: Generate PostgreSQL SQL
+
+on:
+  push:
+    branches: [ refactor/minimal-api ]
+    paths:
+      - 'sql/ry_net_mysql.sql'
+      - '.github/workflows/generate-postgresql-sql.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install SQLGlot
+        run: python -m pip install sqlglot
+
+      - name: Generate PostgreSQL SQL
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          import sqlglot
+
+          source = Path('sql/ry_net_mysql.sql').read_text(encoding='utf-8')
+          statements = []
+          for statement in sqlglot.parse(source, read='mysql'):
+              if statement is None:
+                  continue
+              sql = statement.sql(dialect='postgres')
+              sql = re.sub(r'\b(BIGINT|INT|SMALLINT|TINYINT)\(\d+\)', r'\1', sql, flags=re.I)
+              sql = re.sub(r'\b(?:UNSIGNED|ZEROFILL)\b', '', sql, flags=re.I)
+              sql = re.sub(r'\bSYSDATE\(\)', 'CURRENT_TIMESTAMP', sql, flags=re.I)
+              sql = re.sub(r'\s+ENGINE\s*=\s*\w+', '', sql, flags=re.I)
+              sql = re.sub(r'\s+AUTO_INCREMENT(?:\s*=\s*\d+)?', '', sql, flags=re.I)
+              sql = re.sub(r'\s+COMMENT\s*=\s*\'[^\']*\'', '', sql, flags=re.I)
+              sql = sql.strip()
+              if sql:
+                  statements.append(sql + ';')
+
+          header = '''-- ================================================================\n-- RuoYi.Net PostgreSQL schema\n-- Generated from sql/ry_net_mysql.sql.\n-- ================================================================\n\n'''
+          Path('sql/ry_net_postgresql.sql').write_text(
+              header + '\n\n'.join(statements) + '\n',
+              encoding='utf-8'
+          )
+          PY
+
+      - name: Validate generated SQL structure
+        run: |
+          test -s sql/ry_net_postgresql.sql
+          ! grep -Eiq '\bENGINE[[:space:]]*=|AUTO_INCREMENT|BIGINT\([0-9]+\)|INT\([0-9]+\)|SYSDATE\(\)' sql/ry_net_postgresql.sql
+          grep -Eiq '^CREATE TABLE' sql/ry_net_postgresql.sql
+
+      - name: Commit generated SQL
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sql/ry_net_postgresql.sql
+          if git diff --cached --quiet; then
+            echo 'No PostgreSQL SQL changes.'
+          else
+            git commit -m 'build: generate PostgreSQL SQL [skip ci]'
+            git push
+          fi

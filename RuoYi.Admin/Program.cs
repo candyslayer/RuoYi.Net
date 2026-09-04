@@ -1,21 +1,36 @@
 using AspectCore.Extensions.DependencyInjection;
+using RuoYi.Admin.Endpoints;
+using RuoYi.Quartz.Endpoints;
 
-internal class Program
+var builder = WebApplication.CreateBuilder(args).Inject();
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    private static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args).Inject();
-        builder.WebHost.ConfigureKestrel(serverOptions =>
-        {
-            // Set properties and call methods on options
-            // serverOptions.Limits.MaxRequestBodySize = 50 * 1024 * 1024;
-            serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(3);
-            serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(1);
-        });
+    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(3);
+    serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(1);
+});
 
-        // ÓÃAspectCoreÌæ»»Ä¬ÈÏµÄIOCÈİÆ÷, ÓÃÓÚAOPÀ¹½Ø, Èç ÊÂÎñÀ¹½ØÆ÷: TransactionalAttribute 
-        builder.Host.UseServiceProviderFactory(new DynamicProxyServiceProviderFactory());
+// ç”¨ AspectCore æ›¿æ¢é»˜è®¤ IOC å®¹å™¨ï¼Œç”¨äº AOP æ‹¦æˆªã€‚
+builder.Host.UseServiceProviderFactory(new DynamicProxyServiceProviderFactory());
 
-        builder.Build().Run();
-    }
-}
+var app = builder.Build();
+
+// Minimal API endpoints.
+app.MapSystemEndpoints();
+app.MapRegisterEndpoints();
+app.MapUserEndpoints();
+app.MapPostEndpoints();
+app.MapNoticeEndpoints();
+app.MapRoleEndpoints();
+app.MapMenuEndpoints();
+app.MapDeptEndpoints();
+app.MapDictEndpoints();
+app.MapConfigEndpoints();
+app.MapProfileEndpoints();
+app.MapMonitorEndpoints();
+app.MapLogEndpoints();
+app.MapCommonEndpoints();
+app.MapSampleEndpoints();
+app.MapQuartzEndpoints();
+
+app.Run();
