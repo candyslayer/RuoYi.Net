@@ -1,5 +1,6 @@
 using AspectCore.Extensions.DependencyInjection;
 using RuoYi.Admin.Endpoints;
+using RuoYi.Quartz.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args).Inject();
 
@@ -30,5 +31,6 @@ app.MapMonitorEndpoints();
 app.MapLogEndpoints();
 app.MapCommonEndpoints();
 app.MapSampleEndpoints();
+app.MapQuartzEndpoints();
 
 app.Run();
