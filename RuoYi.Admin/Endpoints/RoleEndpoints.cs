@@ -1,3 +1,4 @@
+using RuoYi.Admin.Authorization;
 using RuoYi.Common.Enums;
 using RuoYi.Common.Utils;
 using RuoYi.Data.Models;
@@ -10,28 +11,25 @@ public static class RoleEndpoints
     public static IEndpointRouteBuilder MapRoleEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var group = endpoints.MapGroup("/system/role").RequireAuthorization();
-
-        group.MapGet("/list", GetListAsync);
-        group.MapGet("/{id:long}", GetAsync);
-        group.MapPost("", AddAsync);
-        group.MapPut("", EditAsync);
-        group.MapPut("/dataScope", SaveDataScopeAsync);
-        group.MapPut("/changeStatus", ChangeStatusAsync);
-        group.MapDelete("/{ids}", RemoveAsync);
-        group.MapPost("/export", ExportAsync);
-        group.MapPost("/optionselect", OptionSelectAsync);
-        group.MapGet("/authUser/allocatedList", GetAllocatedListAsync);
-        group.MapGet("/authUser/unallocatedList", GetUnallocatedListAsync);
-        group.MapPut("/authUser/cancel", CancelAuthUserAsync);
-        group.MapPut("/authUser/cancelAll", CancelAuthUserBatchAsync);
-        group.MapPut("/authUser/selectAll", SaveAuthUserAllAsync);
-        group.MapGet("/deptTree/{roleId:long}", GetDeptTreeAsync);
-
+        group.MapGet("/list", GetListAsync).RequirePermission("system:role:list");
+        group.MapGet("/{id:long}", GetAsync).RequirePermission("system:role:query");
+        group.MapPost("", AddAsync).RequirePermission("system:role:add");
+        group.MapPut("", EditAsync).RequirePermission("system:role:edit");
+        group.MapPut("/dataScope", SaveDataScopeAsync).RequirePermission("system:role:edit");
+        group.MapPut("/changeStatus", ChangeStatusAsync).RequirePermission("system:role:changeStatus");
+        group.MapDelete("/{ids}", RemoveAsync).RequirePermission("system:role:remove");
+        group.MapPost("/export", ExportAsync).RequirePermission("system:role:export");
+        group.MapPost("/optionselect", OptionSelectAsync).RequirePermission("system:role:list");
+        group.MapGet("/authUser/allocatedList", GetAllocatedListAsync).RequirePermission("system:role:list");
+        group.MapGet("/authUser/unallocatedList", GetUnallocatedListAsync).RequirePermission("system:role:list");
+        group.MapPut("/authUser/cancel", CancelAuthUserAsync).RequirePermission("system:role:edit");
+        group.MapPut("/authUser/cancelAll", CancelAuthUserBatchAsync).RequirePermission("system:role:edit");
+        group.MapPut("/authUser/selectAll", SaveAuthUserAllAsync).RequirePermission("system:role:edit");
+        group.MapGet("/deptTree/{roleId:long}", GetDeptTreeAsync).RequirePermission("system:role:query");
         return endpoints;
     }
 
-    private static Task<SqlSugarPagedList<SysRoleDto>> GetListAsync(SysRoleDto dto, SysRoleService service)
-        => service.GetPagedRoleListAsync(dto);
+    private static Task<SqlSugarPagedList<SysRoleDto>> GetListAsync(SysRoleDto dto, SysRoleService service) => service.GetPagedRoleListAsync(dto);
 
     private static async Task<AjaxResult> GetAsync(long id, SysRoleService service)
     {
@@ -41,26 +39,18 @@ public static class RoleEndpoints
 
     private static async Task<AjaxResult> AddAsync(SysRoleDto role, SysRoleService service)
     {
-        if (!await service.CheckRoleNameUniqueAsync(role))
-            return AjaxResult.Error($"新增角色'{role.RoleName}'失败，角色名称已存在");
-        if (!await service.CheckRoleKeyUniqueAsync(role))
-            return AjaxResult.Error($"新增角色'{role.RoleName}'失败，角色权限已存在");
+        if (!await service.CheckRoleNameUniqueAsync(role)) return AjaxResult.Error($"新增角色'{role.RoleName}'失败，角色名称已存在");
+        if (!await service.CheckRoleKeyUniqueAsync(role)) return AjaxResult.Error($"新增角色'{role.RoleName}'失败，角色权限已存在");
         return AjaxResult.Success(await service.InsertRoleAsync(role));
     }
 
-    private static async Task<AjaxResult> EditAsync(SysRoleDto role, SysRoleService service,
-        SysPermissionService permissionService, SysUserService userService, TokenService tokenService)
+    private static async Task<AjaxResult> EditAsync(SysRoleDto role, SysRoleService service, SysPermissionService permissionService, SysUserService userService, TokenService tokenService)
     {
         service.CheckRoleAllowed(role);
         await service.CheckRoleDataScopeAsync(role.RoleId);
-        if (!await service.CheckRoleNameUniqueAsync(role))
-            return AjaxResult.Error($"修改角色'{role.RoleName}'失败，角色名称已存在");
-        if (!await service.CheckRoleKeyUniqueAsync(role))
-            return AjaxResult.Error($"修改角色'{role.RoleName}'失败，角色权限已存在");
-
-        if (await service.UpdateRoleAsync(role) <= 0)
-            return AjaxResult.Error($"修改角色'{role.RoleName}'失败，请联系管理员");
-
+        if (!await service.CheckRoleNameUniqueAsync(role)) return AjaxResult.Error($"修改角色'{role.RoleName}'失败，角色名称已存在");
+        if (!await service.CheckRoleKeyUniqueAsync(role)) return AjaxResult.Error($"修改角色'{role.RoleName}'失败，角色权限已存在");
+        if (await service.UpdateRoleAsync(role) <= 0) return AjaxResult.Error($"修改角色'{role.RoleName}'失败，请联系管理员");
         var loginUser = SecurityUtils.GetLoginUser();
         if (loginUser.User != null && !SecurityUtils.IsAdmin(loginUser.User))
         {
@@ -85,26 +75,13 @@ public static class RoleEndpoints
         return AjaxResult.Success(await service.UpdateRoleStatusAsync(role));
     }
 
-    private static async Task<AjaxResult> RemoveAsync(string ids, SysRoleService service)
-        => AjaxResult.Success(await service.DeleteRoleByIdsAsync(ids.SplitToList<long>()));
-
-    private static async Task ExportAsync(SysRoleDto dto, HttpResponse response, SysRoleService service)
-        => await ExcelUtils.ExportAsync(response, await service.GetRoleListAsync(dto));
-
-    private static async Task<AjaxResult> OptionSelectAsync(SysRoleService service)
-        => AjaxResult.Success(await service.GetListAsync(new SysRoleDto()));
-
-    private static Task<SqlSugarPagedList<SysUserDto>> GetAllocatedListAsync(SysUserDto dto, SysUserService service)
-        => service.GetPagedAllocatedListAsync(dto);
-
-    private static Task<SqlSugarPagedList<SysUserDto>> GetUnallocatedListAsync(SysUserDto dto, SysUserService service)
-        => service.GetPagedUnallocatedListAsync(dto);
-
-    private static async Task<AjaxResult> CancelAuthUserAsync(SysUserRoleDto dto, SysRoleService service)
-        => AjaxResult.Success(await service.DeleteAuthUserAsync(dto));
-
-    private static async Task<AjaxResult> CancelAuthUserBatchAsync(SysUserRoleDto dto, SysRoleService service)
-        => AjaxResult.Success(await service.DeleteAuthUserBathAsync(dto));
+    private static async Task<AjaxResult> RemoveAsync(string ids, SysRoleService service) => AjaxResult.Success(await service.DeleteRoleByIdsAsync(ids.SplitToList<long>()));
+    private static async Task ExportAsync(SysRoleDto dto, HttpResponse response, SysRoleService service) => await ExcelUtils.ExportAsync(response, await service.GetRoleListAsync(dto));
+    private static async Task<AjaxResult> OptionSelectAsync(SysRoleService service) => AjaxResult.Success(await service.GetListAsync(new SysRoleDto()));
+    private static Task<SqlSugarPagedList<SysUserDto>> GetAllocatedListAsync(SysUserDto dto, SysUserService service) => service.GetPagedAllocatedListAsync(dto);
+    private static Task<SqlSugarPagedList<SysUserDto>> GetUnallocatedListAsync(SysUserDto dto, SysUserService service) => service.GetPagedUnallocatedListAsync(dto);
+    private static async Task<AjaxResult> CancelAuthUserAsync(SysUserRoleDto dto, SysRoleService service) => AjaxResult.Success(await service.DeleteAuthUserAsync(dto));
+    private static async Task<AjaxResult> CancelAuthUserBatchAsync(SysUserRoleDto dto, SysRoleService service) => AjaxResult.Success(await service.DeleteAuthUserBathAsync(dto));
 
     private static async Task<AjaxResult> SaveAuthUserAllAsync(SysUserRoleDto dto, SysRoleService service)
     {
