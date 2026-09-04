@@ -19,5 +19,9 @@ app.MapSystemEndpoints();
 app.MapUserEndpoints();
 app.MapPostEndpoints();
 app.MapNoticeEndpoints();
+app.MapRoleEndpoints();
+app.MapMenuEndpoints();
+app.MapDeptEndpoints();
+app.MapDictEndpoints();
 
 app.Run();
