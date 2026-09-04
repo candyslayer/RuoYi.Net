@@ -14,7 +14,8 @@ builder.Host.UseServiceProviderFactory(new DynamicProxyServiceProviderFactory())
 
 var app = builder.Build();
 
-// Minimal API endpoints. Existing MVC endpoints remain temporarily during the incremental migration.
+// Minimal API endpoints.
 app.MapSystemEndpoints();
+app.MapUserEndpoints();
 
 app.Run();
