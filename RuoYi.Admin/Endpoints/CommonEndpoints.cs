@@ -1,6 +1,5 @@
 using Lazy.Captcha.Core;
-using RuoYi.Framework.Cache;
-using RuoYi.System.Services;
+using RuoYi.Admin.Services;
 using StackExchange.Profiling;
 
 namespace RuoYi.Admin.Endpoints;
