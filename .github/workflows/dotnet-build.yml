@@ -24,3 +24,6 @@ jobs:
 
       - name: Build
         run: dotnet build RuoYi.Net.sln --configuration Release --no-restore
+
+      - name: NativeAOT publish check
+        run: dotnet publish RuoYi.Admin/RuoYi.Admin.csproj --configuration Release --runtime linux-x64 --self-contained true --property:PublishAot=true --property:StripSymbols=true --no-restore
