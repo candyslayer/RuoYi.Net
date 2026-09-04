@@ -1,3 +1,4 @@
+using RuoYi.Admin.Authorization;
 using RuoYi.Data.Models;
 using RuoYi.Framework;
 using RuoYi.Framework.Cache;
@@ -20,16 +21,16 @@ public static class MonitorEndpoints
     public static IEndpointRouteBuilder MapMonitorEndpoints(this IEndpointRouteBuilder endpoints)
     {
         var cache = endpoints.MapGroup("/monitor/cache").RequireAuthorization();
-        cache.MapGet("", GetCacheInfoAsync);
-        cache.MapGet("/getNames", GetCacheNames);
-        cache.MapGet("/getKeys/{cacheName}", GetCacheKeys);
-        cache.MapGet("/getValue/{cacheName}/{cacheKey}", GetCacheValue);
-        cache.MapDelete("/clearCacheName/{cacheName}", ClearCacheName);
-        cache.MapDelete("/clearCacheKey/{cacheKey}", ClearCacheKey);
-        cache.MapDelete("/clearCacheAll", ClearCacheAll);
+        cache.MapGet("", GetCacheInfoAsync).RequirePermission("monitor:cache:list");
+        cache.MapGet("/getNames", GetCacheNames).RequirePermission("monitor:cache:list");
+        cache.MapGet("/getKeys/{cacheName}", GetCacheKeys).RequirePermission("monitor:cache:list");
+        cache.MapGet("/getValue/{cacheName}/{cacheKey}", GetCacheValue).RequirePermission("monitor:cache:list");
+        cache.MapDelete("/clearCacheName/{cacheName}", ClearCacheName).RequirePermission("monitor:cache:list");
+        cache.MapDelete("/clearCacheKey/{cacheKey}", ClearCacheKey).RequirePermission("monitor:cache:list");
+        cache.MapDelete("/clearCacheAll", ClearCacheAll).RequirePermission("monitor:cache:list");
 
         var server = endpoints.MapGroup("/monitor/server").RequireAuthorization();
-        server.MapGet("", GetServerInfo);
+        server.MapGet("", GetServerInfo).RequirePermission("monitor:server:list");
 
         var druid = endpoints.MapGroup("/monitor/druid").RequireAuthorization();
         druid.MapGet("", GetDruidInfo);
