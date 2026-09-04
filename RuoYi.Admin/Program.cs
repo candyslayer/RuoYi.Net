@@ -1,21 +1,20 @@
 using AspectCore.Extensions.DependencyInjection;
+using RuoYi.Admin.Endpoints;
 
-internal class Program
+var builder = WebApplication.CreateBuilder(args).Inject();
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    private static void Main(string[] args)
-    {
-        var builder = WebApplication.CreateBuilder(args).Inject();
-        builder.WebHost.ConfigureKestrel(serverOptions =>
-        {
-            // Set properties and call methods on options
-            // serverOptions.Limits.MaxRequestBodySize = 50 * 1024 * 1024;
-            serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(3);
-            serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(1);
-        });
+    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(3);
+    serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(1);
+});
 
-        // ÓÃAspectCoreÌæ»»Ä¬ÈÏµÄIOCÈİÆ÷, ÓÃÓÚAOPÀ¹½Ø, Èç ÊÂÎñÀ¹½ØÆ÷: TransactionalAttribute 
-        builder.Host.UseServiceProviderFactory(new DynamicProxyServiceProviderFactory());
+// ç”¨ AspectCore æ›¿æ¢é»˜è®¤ IOC å®¹å™¨ï¼Œç”¨äº AOP æ‹¦æˆªã€‚
+builder.Host.UseServiceProviderFactory(new DynamicProxyServiceProviderFactory());
 
-        builder.Build().Run();
-    }
-}
+var app = builder.Build();
+
+// Minimal API endpoints. Existing MVC endpoints remain temporarily during the incremental migration.
+app.MapSystemEndpoints();
+
+app.Run();
